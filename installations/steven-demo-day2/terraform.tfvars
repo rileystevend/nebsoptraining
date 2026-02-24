@@ -7,10 +7,10 @@
 #----------------------------------------------------------------------------------------------------------------------#
 
 # Name of the company. It is used for context name of the cluster in .kubeconfig file.
-company_name = "stevenrileyco"
+company_name = ""
 
 # Whether the cluster is production or not.
-production = false
+production = true
 
 # Follow the installation guide and put IAM merge request URL here.
 # Required if production = true.
@@ -57,41 +57,41 @@ filestore_controller_spool = {
 # Notice that auto-backups are enabled for filesystems with size less than 12 TiB.
 # If you need backups for jail larger than 12 TiB, set 'backups_enabled' to 'force_enable' down below.
 # ---
- filestore_jail = {
-   spec = {
-     size_gibibytes       = 2048
-     block_size_kibibytes = 4
-   }
- }
+# filestore_jail = {
+#   spec = {
+#     size_gibibytes       = 2048
+#     block_size_kibibytes = 4
+#   }
+# }
 # Or use existing filestore.
 # ---
-#filestore_jail = {
-#  existing = {
-#    id = "computefilesystem-<YOUR-FILESTORE-ID>"
-#  }
-#}
+filestore_jail = {
+  existing = {
+    id = "computefilesystem-<YOUR-FILESTORE-ID>"
+  }
+}
 
 # Additional shared filesystems to be mounted inside jail.
 # If a big filesystem is needed it's better to deploy this additional storage because jails bigger than 12 TiB
 # ARE NOT BACKED UP by default.
 # ---
- filestore_jail_submounts = [{
-   name       = "data"
-   mount_path = "/mnt/data"
-   spec = {
-     size_gibibytes       = 2048
-     block_size_kibibytes = 4
-   }
- }]
+# filestore_jail_submounts = [{
+#   name       = "data"
+#   mount_path = "/mnt/data"
+#   spec = {
+#     size_gibibytes       = 2048
+#     block_size_kibibytes = 4
+#   }
+# }]
 # Or use existing filestores.
 # ---
-#filestore_jail_submounts = [{
-#  name       = "data"
-#  mount_path = "/mnt/data"
-#  existing = {
-#    id = "computefilesystem-<YOUR-FILESTORE-ID>"
-#  }
-#}]
+filestore_jail_submounts = [{
+  name       = "data"
+  mount_path = "/mnt/data"
+  existing = {
+    id = "computefilesystem-<YOUR-FILESTORE-ID>"
+  }
+}]
 
 # Additional (Optional) node-local Network-SSD disks to be mounted inside jail on worker nodes.
 # It will create compute disks with provided spec for each node via CSI.
@@ -413,7 +413,7 @@ tailscale_enabled = false
 # Authorized keys accepted for connecting to Slurm login nodes via SSH as 'root' user.
 # ---
 slurm_login_ssh_root_public_keys = [
-  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQKgvUeRkQjhEokaRcMNsOLNtvLHQW5Gudotx4VZvP5Z7LDa8jRnFX0VNyJ2ZYlhyCjTOfn92ivLA3uhMsQVnRTICSuHfm434lSUZySpPc+zF9pLgcj2n8XdQyLC/e1Cty9zFw3A1QjpoSYoK69x599r/rhQcNKYPt3FIGvTE945bHWxaic+tYntN5xv5LHms7THP1h2bMegEfjiwoArx7KpSX4/alyUjnhIf0HHHiDkgc3Ci+wIDyjTgQqR9JyXENe7H4vROTl9weOwKjsuI1oIdcP0e1nDNCYrnq8zYa9W/R1HGaspyAl7l5TG32HPV8uhicPOGJJM2tSYUgy155c0HxkXPWrlnr4l2d1Dn5XXXTQ4Bm8D/3SyKzUmtQFSqVBPvIwES8qnpOsg/24yWu1qDADE9nkhJpqXk2eO+GCrw2fQsYgjcjIkXH0gMk64qYB09WB9tSNtLuznf+R4opdPJIIAKqX22lS0PeZeLkH5I/H7SyKPhwFHc1w1w76WfH2d2U8nSY6wx0aIrDcIS5uPBEqnZuGIOZ6lsUeWxMW7h39qEoG0K3LS5SWa5ABJP7Si/AtqWIt5JFBgtwozSJXkdwDBN/LXYMZoJsLYZTbkZLfj0st3XS0Z0iX5KkWg2swz2uJXSBGHJHM1VgxnVFVE8w6S2Q2+KE4wd6CXd91Q== sdriley@sdriley-mac",
+  "",
 ]
 
 # endregion Login
@@ -442,7 +442,7 @@ slurm_exporter_enabled = true
 # - "testing" - to be used for Soperator E2E tests.
 # - "dev" - to be used for Soperator development clusters.
 # ---
-active_checks_scope = "dev"
+active_checks_scope = ""
 
 # endregion ActiveChecks
 
