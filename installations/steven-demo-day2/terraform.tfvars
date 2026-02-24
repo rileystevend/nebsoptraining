@@ -59,7 +59,7 @@ filestore_controller_spool = {
 # ---
  filestore_jail = {
    spec = {
-     size_gibibytes       = 2048
+     size_gibibytes       = 1536
      block_size_kibibytes = 4
    }
  }
@@ -79,7 +79,7 @@ filestore_controller_spool = {
    name       = "data"
    mount_path = "/mnt/data"
    spec = {
-     size_gibibytes       = 2048
+     size_gibibytes       = 1536
      block_size_kibibytes = 4
    }
  }]
@@ -132,7 +132,7 @@ node_local_image_disk = {
 # ---
 filestore_accounting = {
   spec = {
-    size_gibibytes       = 512
+    size_gibibytes       = 256
     block_size_kibibytes = 4
   }
 }
