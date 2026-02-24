@@ -17,8 +17,7 @@ resource "terraform_data" "check_region" {
 variable "iam_token" {
   description = "IAM token used for communicating with Nebius services."
   type        = string
-  nullable    = true
-  default     = null
+  nullable    = false
   sensitive   = true
 }
 
@@ -47,9 +46,9 @@ variable "iam_tenant_id" {
   }
 }
 
-#data "nebius_iam_v1_tenant" "this" {
-#  id = var.iam_tenant_id
-#}
+data "nebius_iam_v1_tenant" "this" {
+  id = var.iam_tenant_id
+}
 
 variable "o11y_iam_tenant_id" {
   description = "ID of the IAM tenant for O11y."

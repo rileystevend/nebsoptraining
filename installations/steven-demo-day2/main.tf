@@ -16,9 +16,8 @@ locals {
   flux_namespace     = "flux-system"
   k8s_cluster_name   = format("soperator-%s", var.company_name)
 
-  backups_enabled = false 
-  #(var.backups_enabled == "force_enable" ||
-  #(var.backups_enabled == "auto" && local.filestore_jail_calculated_size_gibibytes < 12 * 1024))
+  backups_enabled = (var.backups_enabled == "force_enable" ||
+  (var.backups_enabled == "auto" && local.filestore_jail_calculated_size_gibibytes < 12 * 1024))
 
   # Legacy node_group_workers for old-style deployments (without nodesets)
   node_group_workers = flatten([for i, nodeset in var.slurm_nodeset_workers : [
@@ -74,8 +73,7 @@ module "filestore" {
     terraform_data.check_variables,
   ]
 
-  iam_project_id = var.iam_project_id
-  #data.nebius_iam_v1_project.this.id
+  iam_project_id = data.nebius_iam_v1_project.this.id
 
   k8s_cluster_name = local.k8s_cluster_name
 
@@ -135,10 +133,8 @@ module "nfs-server" {
 
   source = "../../../modules/nfs-server"
 
-  parent_id = var.iam_project_id
-  #data.nebius_iam_v1_project.this.id
-  subnet_id = var.vpc_subnet_id
-  #data.nebius_vpc_v1_subnet.this.id
+  parent_id = data.nebius_iam_v1_project.this.id
+  subnet_id = data.nebius_vpc_v1_subnet.this.id
 
   platform      = var.nfs.resource.platform
   preset        = var.nfs.resource.preset
@@ -186,10 +182,8 @@ module "k8s" {
 
   source = "../../modules/k8s"
 
-  iam_project_id  = var.iam_project_id
-  #data.nebius_iam_v1_project.this.id
-  vpc_subnet_id   = var.vpc_subnet_id
-  #data.nebius_vpc_v1_subnet.this.id
+  iam_project_id  = data.nebius_iam_v1_project.this.id
+  vpc_subnet_id   = data.nebius_vpc_v1_subnet.this.id
   login_public_ip = var.slurm_login_public_ip
 
   k8s_version                  = var.k8s_version
@@ -252,8 +246,7 @@ module "nvidia_operator_network" {
   source = "../../../modules/network-operator"
 
   cluster_id = module.k8s.cluster_id
-  parent_id  = var.iam_project_id
-  #data.nebius_iam_v1_project.this.id
+  parent_id  = data.nebius_iam_v1_project.this.id
 
   providers = {
     nebius = nebius
@@ -270,8 +263,7 @@ module "nvidia_operator_gpu" {
   source = "../../../modules/gpu-operator"
 
   cluster_id = module.k8s.cluster_id
-  parent_id  = var.iam_project_id
-  #data.nebius_iam_v1_project.this.id
+  parent_id  = data.nebius_iam_v1_project.this.id
 
   enable_dcgm_exporter        = var.dcgm_job_mapping_enabled == false && var.telemetry_enabled
   enable_dcgm_service_monitor = var.dcgm_job_mapping_enabled == false && var.telemetry_enabled
@@ -304,16 +296,15 @@ module "slurm" {
     module.k8s,
     module.o11y,
     module.fluxcd,
+    module.backups,
   ]
-  #  module.backups,
-  
 
   source = "../../modules/slurm"
 
   active_checks_scope = var.active_checks_scope
 
   region              = var.region
-  iam_tenant_id       = "tenant-e00wa7h3s82day57rg"
+  iam_tenant_id       = var.iam_tenant_id
   iam_project_id      = var.iam_project_id
   cluster_name        = var.company_name
   name                = local.slurm_cluster_name
@@ -446,21 +437,19 @@ module "slurm" {
   public_o11y_enabled = var.public_o11y_enabled
   soperator_notifier  = var.soperator_notifier
 
-  backups_enabled = false
-  #local.backups_enabled
-  backups_config = null
-  #{
-  #  secret_name    = local.backups_enabled ? module.backups[0].secret_name : null
-  #  password       = var.backups_password
-  #  schedule       = var.backups_schedule
-  #  prune_schedule = var.backups_prune_schedule
-  #  retention      = var.backups_retention
-  #  storage = {
-  #    bucket : local.backups_enabled ? module.backups_store[0].name : null,
-  #    endpoint : local.backups_enabled ? module.backups_store[0].endpoint : null,
-  #    bucket_id : local.backups_enabled ? module.backups_store[0].bucket_id : null
-  #  }
-  #}
+  backups_enabled = local.backups_enabled
+  backups_config = {
+    secret_name    = local.backups_enabled ? module.backups[0].secret_name : null
+    password       = var.backups_password
+    schedule       = var.backups_schedule
+    prune_schedule = var.backups_prune_schedule
+    retention      = var.backups_retention
+    storage = {
+      bucket : local.backups_enabled ? module.backups_store[0].name : null,
+      endpoint : local.backups_enabled ? module.backups_store[0].endpoint : null,
+      bucket_id : local.backups_enabled ? module.backups_store[0].bucket_id : null
+    }
+  }
 
   slurmdbd_config         = var.slurmdbd_config
   slurm_accounting_config = var.slurm_accounting_config
@@ -520,43 +509,43 @@ module "login_script" {
   }
 }
 
-#module "backups_store" {
-#  count = local.backups_enabled ? 1 : 0
-#
-#  source = "../../modules/backups_store"
-#
-#  iam_project_id = var.iam_project_id
-#  instance_name  = local.k8s_cluster_name
-#
-#  cleanup_bucket_on_destroy = var.cleanup_bucket_on_destroy
-#
-#  depends_on = [
-#    module.k8s,
-#    module.fluxcd,
-#  ]
-#}
+module "backups_store" {
+  count = local.backups_enabled ? 1 : 0
 
-#module "backups" {
-#  count = local.backups_enabled ? 1 : 0
-#
-#  source = "../../modules/backups"
-#
-#  k8s_cluster_context = module.k8s.cluster_context
-#
-#  iam_project_id      = var.iam_project_id
-#  iam_tenant_id       = var.iam_tenant_id
-#  instance_name       = local.k8s_cluster_name
-#  soperator_namespace = local.slurm_cluster_name
-#  backups_password    = var.backups_password
-#
-#  providers = {
-#    nebius = nebius
-#  }
-#
-#  depends_on = [
-#    module.k8s,
-#  ]
-#}
+  source = "../../modules/backups_store"
+
+  iam_project_id = var.iam_project_id
+  instance_name  = local.k8s_cluster_name
+
+  cleanup_bucket_on_destroy = var.cleanup_bucket_on_destroy
+
+  depends_on = [
+    module.k8s,
+    module.fluxcd,
+  ]
+}
+
+module "backups" {
+  count = local.backups_enabled ? 1 : 0
+
+  source = "../../modules/backups"
+
+  k8s_cluster_context = module.k8s.cluster_context
+
+  iam_project_id      = var.iam_project_id
+  iam_tenant_id       = var.iam_tenant_id
+  instance_name       = local.k8s_cluster_name
+  soperator_namespace = local.slurm_cluster_name
+  backups_password    = var.backups_password
+
+  providers = {
+    nebius = nebius
+  }
+
+  depends_on = [
+    module.k8s,
+  ]
+}
 
 module "fluxcd" {
   depends_on = [
