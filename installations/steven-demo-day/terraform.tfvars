@@ -75,17 +75,16 @@ filestore_controller_spool = {
 # If a big filesystem is needed it's better to deploy this additional storage because jails bigger than 12 TiB
 # ARE NOT BACKED UP by default.
 # ---
-# filestore_jail_submounts = [{
-#   name       = "data"
-#   mount_path = "/mnt/data"
-#   spec = {
-#     size_gibibytes       = 2048
-#     block_size_kibibytes = 4
-#   }
-# }]
+ filestore_jail_submounts = [{
+   name       = "data"
+   mount_path = "/mnt/data"
+   spec = {
+     size_gibibytes       = 2048
+     block_size_kibibytes = 4
+   }
+ }]
 # Or use existing filestores.
 # ---
- filestore_jail_submounts = []
 #filestore_jail_submounts = [{
 #  name       = "data"
 #  mount_path = "/mnt/data"
@@ -443,7 +442,7 @@ slurm_exporter_enabled = true
 # - "testing" - to be used for Soperator E2E tests.
 # - "dev" - to be used for Soperator development clusters.
 # ---
-active_checks_scope = ""
+active_checks_scope = "dev"
 
 # endregion ActiveChecks
 
