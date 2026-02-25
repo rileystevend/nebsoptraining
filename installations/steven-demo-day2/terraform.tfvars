@@ -195,8 +195,9 @@ slurm_operator_stable = true
 slurm_nodesets_partitions = [
   {
     name         = "main"
-    is_all       = true
-    nodeset_refs = [] # e.g. ["worker"], but is_all must be false in this case
+    is_all       = false
+    nodeset_refs = ["worker"] 
+    # e.g. ["worker"], but is_all must be false in this case
     config       = "Default=YES PriorityTier=10 MaxTime=INFINITE State=UP OverSubscribe=YES"
   },
   {
