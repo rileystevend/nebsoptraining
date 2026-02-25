@@ -182,7 +182,7 @@ nfs_in_k8s = {
 
 # Version of soperator.
 # ---
-slurm_operator_version = "2.0.1"
+slurm_operator_version = "2.0.2"
 
 # Is the version of soperator stable or not.
 # ---
@@ -192,33 +192,34 @@ slurm_operator_stable = true
 # Users must not remove the "hidden" partition.
 # Users can modify the "main" partition, but should not remove it (there must be at least one default partition).
 # ---
-slurm_nodesets_partitions = [
-  {
-    name         = "main"
-    is_all       = true
-    nodeset_refs = [] # e.g. ["worker"], but is_all must be false in this case
-    config       = "Default=YES PriorityTier=10 MaxTime=INFINITE State=UP OverSubscribe=YES"
-  },
-  {
-    name         = "hidden"
-    is_all       = true
-    nodeset_refs = []
-    config       = "Default=NO PriorityTier=10 PreemptMode=OFF Hidden=YES MaxTime=INFINITE State=UP OverSubscribe=YES"
-  },
-]
+slurm_nodesets_partitions = []
+#  {
+#    name         = "main"
+#    is_all       = true
+#    nodeset_refs = [] 
+    # e.g. ["worker"], but is_all must be false in this case
+#    config       = "Default=YES PriorityTier=10 MaxTime=INFINITE State=UP OverSubscribe=YES"
+#  },
+#  {
+#    name         = "hidden"
+#    is_all       = true
+#    nodeset_refs = []
+#    config       = "Default=NO PriorityTier=10 PreemptMode=OFF Hidden=YES MaxTime=INFINITE State=UP OverSubscribe=YES"
+#  },
+#]
 
 # Type of the Slurm partition config. Could be either `default` or `custom`.
 # By default, "default".
 # ---
-slurm_partition_config_type = "default"
+slurm_partition_config_type = "custom"
 # Partition config in case of `custom` slurm_partition_config_type.
 # Each string must be started with `PartitionName`.
 # By default, empty list.
 # ---
-# slurm_partition_raw_config = [
-#   "PartitionName=low_priority Nodes=low_priority Default=YES MaxTime=INFINITE State=UP PriorityTier=1",
-#   "PartitionName=high_priority Nodes=low_priority Default=NO MaxTime=INFINITE State=UP PriorityTier=2"
-# ]
+ slurm_partition_raw_config = [
+  "PartitionName=low_priority Nodes=ALL Default=YES MaxTime=INFINITE State=UP PriorityTier=10 OverSubscribe=YES",
+   "PartitionName=high_priority Nodes=ALL Default=NO MaxTime=INFINITE State=UP PriorityTier=10 State=UP OverSubscribe=YES"
+ ]
 # If Nodes present, they must not contain node names: use only nodeset values, "ALL" or "".
 # If nodesets are used in the partition config, slurm_worker_features with non-empty nodeset_name
 # must be declared (see below).
@@ -332,7 +333,7 @@ slurm_nodeset_workers = [
     # Provide a list of strings to set Slurm Node features
     features = null
     # Set to `true` to create partition for the NodeSet by default
-    create_partition = null
+    create_partition = false
     # Whether to enable ephemeral nodes behavior for this worker nodeset.
     # When true, nodes will use dynamic topology injection and power management.
     # By default, false.
