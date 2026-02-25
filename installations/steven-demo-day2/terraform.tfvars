@@ -320,7 +320,7 @@ slurm_nodeset_workers = [
       block_size_kibibytes = 4
     }
     gpu_cluster = {
-      infiniband_fabric = "fabrics-2"
+      infiniband_fabric = "fabric-2"
     }
     # Change to preemptible = {} in case you want to use preemptible nodes
     preemptible = null
@@ -355,7 +355,7 @@ slurm_nodeset_login = {
   size = 1
   resource = {
     platform = "cpu-d3"
-    preset   = "8vcpu-32gb"
+    preset   = "16vcpu-64gb"
   }
   boot_disk = {
     type                 = "NETWORK_SSD"
@@ -386,7 +386,7 @@ slurm_nodeset_nfs = {
   size = 1
   resource = {
     platform = "cpu-d3"
-    preset   = "8vcpu-32gb"
+    preset   = "16vcpu-64gb"
   }
   boot_disk = {
     type                 = "NETWORK_SSD"
@@ -524,7 +524,7 @@ accounting_enabled = true
 # Whether to enable Backups. Choose from 'auto', 'force_enable', 'force_disable'.
 # 'auto' turns backups on for jails with max size less than 12 TB and is a default option.
 # ---
-backups_enabled = "auto"
+backups_enabled = "force_disable"
 
 # Password to be used for encrypting jail backups.
 # ---
