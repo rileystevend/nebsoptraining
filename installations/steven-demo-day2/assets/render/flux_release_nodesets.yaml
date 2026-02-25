@@ -3,7 +3,7 @@ nodesets:
 
   interval: 5m
   timeout: 5m
-  version: 2.0.1
+  version: 2.0.2
   namespace: soperator
   releaseName: soperator-nodesets
 
