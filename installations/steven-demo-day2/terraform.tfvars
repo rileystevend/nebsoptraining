@@ -59,7 +59,7 @@ filestore_controller_spool = {
 # ---
  filestore_jail = {
    spec = {
-     size_gibibytes       = 1536
+     size_gibibytes       = 2048
      block_size_kibibytes = 4
    }
  }
@@ -79,7 +79,7 @@ filestore_controller_spool = {
    name       = "data"
    mount_path = "/mnt/data"
    spec = {
-     size_gibibytes       = 1536
+     size_gibibytes       = 1024
      block_size_kibibytes = 4
    }
  }]
@@ -132,7 +132,7 @@ node_local_image_disk = {
 # ---
 filestore_accounting = {
   spec = {
-    size_gibibytes       = 256
+    size_gibibytes       = 512
     block_size_kibibytes = 4
   }
 }
@@ -320,7 +320,7 @@ slurm_nodeset_workers = [
       block_size_kibibytes = 4
     }
     gpu_cluster = {
-      infiniband_fabric = "fabrics-4"
+      infiniband_fabric = "fabric-2"
     }
     # Change to preemptible = {} in case you want to use preemptible nodes
     preemptible = null
@@ -352,10 +352,10 @@ use_preinstalled_gpu_drivers = true
 # Configuration of Slurm Login node set.
 # ---
 slurm_nodeset_login = {
-  size = 2
+  size = 1
   resource = {
     platform = "cpu-d3"
-    preset   = "32vcpu-128gb"
+    preset   = "16vcpu-64gb"
   }
   boot_disk = {
     type                 = "NETWORK_SSD"
@@ -386,7 +386,7 @@ slurm_nodeset_nfs = {
   size = 1
   resource = {
     platform = "cpu-d3"
-    preset   = "32vcpu-128gb"
+    preset   = "16vcpu-64gb"
   }
   boot_disk = {
     type                 = "NETWORK_SSD"
@@ -524,7 +524,7 @@ accounting_enabled = true
 # Whether to enable Backups. Choose from 'auto', 'force_enable', 'force_disable'.
 # 'auto' turns backups on for jails with max size less than 12 TB and is a default option.
 # ---
-backups_enabled = "auto"
+backups_enabled = "force_disable"
 
 # Password to be used for encrypting jail backups.
 # ---
