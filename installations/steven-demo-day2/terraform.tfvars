@@ -57,12 +57,12 @@ filestore_controller_spool = {
 # Notice that auto-backups are enabled for filesystems with size less than 12 TiB.
 # If you need backups for jail larger than 12 TiB, set 'backups_enabled' to 'force_enable' down below.
 # ---
- filestore_jail = {
-   spec = {
-     size_gibibytes       = 2048
-     block_size_kibibytes = 4
-   }
- }
+filestore_jail = {
+  spec = {
+    size_gibibytes       = 2048
+    block_size_kibibytes = 4
+  }
+}
 # Or use existing filestore.
 # ---
 #filestore_jail = {
@@ -75,14 +75,14 @@ filestore_controller_spool = {
 # If a big filesystem is needed it's better to deploy this additional storage because jails bigger than 12 TiB
 # ARE NOT BACKED UP by default.
 # ---
- filestore_jail_submounts = [{
-   name       = "data"
-   mount_path = "/mnt/data"
-   spec = {
-     size_gibibytes       = 1024
-     block_size_kibibytes = 4
-   }
- }]
+filestore_jail_submounts = [{
+  name       = "data"
+  mount_path = "/mnt/data"
+  spec = {
+    size_gibibytes       = 1024
+    block_size_kibibytes = 4
+  }
+}]
 # Or use existing filestores.
 # ---
 #filestore_jail_submounts = [{
@@ -182,7 +182,7 @@ nfs_in_k8s = {
 
 # Version of soperator.
 # ---
-slurm_operator_version = "2.0.2"
+slurm_operator_version = "3.0.0"
 
 # Is the version of soperator stable or not.
 # ---
@@ -192,34 +192,34 @@ slurm_operator_stable = true
 # Users must not remove the "hidden" partition.
 # Users can modify the "main" partition, but should not remove it (there must be at least one default partition).
 # ---
-slurm_nodesets_partitions = []
-#  {
-#    name         = "main"
-#    is_all       = true
-#    nodeset_refs = [] 
+slurm_nodesets_partitions = [
+  {
+    name         = "main"
+    is_all       = true
+    nodeset_refs = []
     # e.g. ["worker"], but is_all must be false in this case
-#    config       = "Default=YES PriorityTier=10 MaxTime=INFINITE State=UP OverSubscribe=YES"
-#  },
-#  {
-#    name         = "hidden"
-#    is_all       = true
-#    nodeset_refs = []
-#    config       = "Default=NO PriorityTier=10 PreemptMode=OFF Hidden=YES MaxTime=INFINITE State=UP OverSubscribe=YES"
-#  },
-#]
+    config = "Default=YES PriorityTier=10 MaxTime=INFINITE State=UP OverSubscribe=YES"
+  },
+  {
+    name         = "hidden"
+    is_all       = true
+    nodeset_refs = []
+    config       = "Default=NO PriorityTier=10 PreemptMode=OFF Hidden=YES MaxTime=INFINITE State=UP OverSubscribe=YES"
+  },
+]
 
 # Type of the Slurm partition config. Could be either `default` or `custom`.
 # By default, "default".
 # ---
-slurm_partition_config_type = "custom"
+slurm_partition_config_type = "default"
 # Partition config in case of `custom` slurm_partition_config_type.
 # Each string must be started with `PartitionName`.
 # By default, empty list.
 # ---
- slurm_partition_raw_config = [
-  "PartitionName=low_priority Nodes=ALL Default=YES MaxTime=INFINITE State=UP PriorityTier=10 OverSubscribe=YES",
-   "PartitionName=high_priority Nodes=ALL Default=NO MaxTime=INFINITE State=UP PriorityTier=10 State=UP OverSubscribe=YES"
- ]
+slurm_partition_raw_config = []
+#   "PartitionName=low_priority Nodes=ALL Default=YES MaxTime=INFINITE State=UP PriorityTier=10 OverSubscribe=YES",
+#   "PartitionName=high_priority Nodes=ALL Default=NO MaxTime=INFINITE State=UP PriorityTier=10 State=UP OverSubscribe=YES"
+# ]
 # If Nodes present, they must not contain node names: use only nodeset values, "ALL" or "".
 # If nodesets are used in the partition config, slurm_worker_features with non-empty nodeset_name
 # must be declared (see below).
@@ -333,7 +333,7 @@ slurm_nodeset_workers = [
     # Provide a list of strings to set Slurm Node features
     features = null
     # Set to `true` to create partition for the NodeSet by default
-    create_partition = false
+    create_partition = null
     # Whether to enable ephemeral nodes behavior for this worker nodeset.
     # When true, nodes will use dynamic topology injection and power management.
     # By default, false.
