@@ -57,12 +57,12 @@ filestore_controller_spool = {
 # Notice that auto-backups are enabled for filesystems with size less than 12 TiB.
 # If you need backups for jail larger than 12 TiB, set 'backups_enabled' to 'force_enable' down below.
 # ---
- filestore_jail = {
-   spec = {
-     size_gibibytes       = 2048
-     block_size_kibibytes = 4
-   }
- }
+filestore_jail = {
+  spec = {
+    size_gibibytes       = 2048
+    block_size_kibibytes = 4
+  }
+}
 # Or use existing filestore.
 # ---
 #filestore_jail = {
@@ -75,14 +75,14 @@ filestore_controller_spool = {
 # If a big filesystem is needed it's better to deploy this additional storage because jails bigger than 12 TiB
 # ARE NOT BACKED UP by default.
 # ---
- filestore_jail_submounts = [{
-   name       = "data"
-   mount_path = "/mnt/data"
-   spec = {
-     size_gibibytes       = 1024
-     block_size_kibibytes = 4
-   }
- }]
+filestore_jail_submounts = [{
+  name       = "data"
+  mount_path = "/mnt/data"
+  spec = {
+    size_gibibytes       = 1024
+    block_size_kibibytes = 4
+  }
+}]
 # Or use existing filestores.
 # ---
 #filestore_jail_submounts = [{
@@ -182,7 +182,7 @@ nfs_in_k8s = {
 
 # Version of soperator.
 # ---
-slurm_operator_version = "2.0.2"
+slurm_operator_version = "3.0.0"
 
 # Is the version of soperator stable or not.
 # ---
@@ -196,9 +196,9 @@ slurm_nodesets_partitions = [
   {
     name         = "main"
     is_all       = true
-    nodeset_refs = [] 
+    nodeset_refs = []
     # e.g. ["worker"], but is_all must be false in this case
-    config       = "Default=YES PriorityTier=10 MaxTime=INFINITE State=UP OverSubscribe=YES"
+    config = "Default=YES PriorityTier=10 MaxTime=INFINITE State=UP OverSubscribe=YES"
   },
   {
     name         = "hidden"
@@ -216,7 +216,7 @@ slurm_partition_config_type = "default"
 # Each string must be started with `PartitionName`.
 # By default, empty list.
 # ---
- slurm_partition_raw_config = []
+slurm_partition_raw_config = []
 #   "PartitionName=low_priority Nodes=ALL Default=YES MaxTime=INFINITE State=UP PriorityTier=10 OverSubscribe=YES",
 #   "PartitionName=high_priority Nodes=ALL Default=NO MaxTime=INFINITE State=UP PriorityTier=10 State=UP OverSubscribe=YES"
 # ]

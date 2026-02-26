@@ -1,0 +1,403 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  annotations:
+    meta.helm.sh/release-name: flux-system-soperator-fluxcd
+    meta.helm.sh/release-namespace: flux-system
+  creationTimestamp: "2026-02-26T03:41:24Z"
+  finalizers:
+  - finalizers.fluxcd.io
+  generation: 1
+  labels:
+    app.kubernetes.io/instance: flux-system-soperator-fluxcd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: helm-soperator-fluxcd
+    app.kubernetes.io/version: 2.0.1
+    helm.sh/chart: helm-soperator-fluxcd-2.0.1
+    helm.toolkit.fluxcd.io/name: soperator-fluxcd
+    helm.toolkit.fluxcd.io/namespace: flux-system
+  name: flux-system-soperator-fluxcd-slurm-cluster
+  namespace: flux-system
+  resourceVersion: "957232"
+  uid: d25cc1f8-e1d1-4f37-a776-711ff057931b
+spec:
+  chart:
+    spec:
+      chart: helm-slurm-cluster
+      interval: 5m
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: flux-system-soperator-fluxcd-soperator
+      version: 3.0.0
+  dependsOn:
+  - name: flux-system-soperator-fluxcd-ns
+  - name: flux-system-soperator-fluxcd-soperator
+  - name: flux-system-soperator-fluxcd-slurm-cluster-storage
+  - name: flux-system-soperator-fluxcd-security-profiles-operator
+  - name: flux-system-soperator-fluxcd-nfs-server
+  driftDetection:
+    mode: warn
+  install:
+    crds: Skip
+    remediation:
+      retries: 3
+  interval: 5m
+  releaseName: soperator
+  targetNamespace: soperator
+  timeout: 5m
+  upgrade:
+    crds: Skip
+    remediation:
+      remediateLastFailure: true
+      retries: 3
+  values:
+    clusterName: soperator
+    clusterType: gpu
+    cudaVersion: 12.9.0
+    k8sNodeFilters:
+    - affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: slurm.nebius.ai/nodeset
+                operator: In
+                values:
+                - system
+      name: system
+    - affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: slurm.nebius.ai/nodeset
+                operator: In
+                values:
+                - accounting
+      name: accounting
+      tolerations:
+      - effect: NoSchedule
+        key: slurm.nebius.ai/nodeset
+        operator: Equal
+        value: accounting
+    - affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: slurm.nebius.ai/nodeset
+                operator: In
+                values:
+                - controller
+      name: controller
+      tolerations:
+      - effect: NoSchedule
+        key: slurm.nebius.ai/nodeset
+        operator: Equal
+        value: controller
+    - affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: slurm.nebius.ai/nodeset
+                operator: In
+                values:
+                - login
+      name: login
+      tolerations:
+      - effect: NoSchedule
+        key: slurm.nebius.ai/nodeset
+        operator: Equal
+        value: login
+    - affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: slurm.nebius.ai/nodeset
+                operator: In
+                values:
+                - worker
+      name: worker
+      tolerations:
+      - effect: NoSchedule
+        key: slurm.nebius.ai/nodeset
+        operator: Equal
+        value: worker
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Exists
+    maintenance: none
+    partitionConfiguration:
+      configType: structured
+      partitions:
+      - config: Default=YES PriorityTier=10 MaxTime=INFINITE State=UP OverSubscribe=YES
+        isAll: true
+        name: main
+      - config: Default=NO PriorityTier=10 PreemptMode=OFF Hidden=YES MaxTime=INFINITE
+          State=UP OverSubscribe=YES
+        isAll: true
+        name: hidden
+    periodicChecks:
+      ncclBenchmark:
+        enabled: false
+        k8sNodeFilterName: system
+    populateJail:
+      k8sNodeFilterName: system
+    sConfigController:
+      container:
+        imagePullPolicy: IfNotPresent
+        resources:
+          cpu: 250m
+          ephemeralStorage: 500Mi
+          memory: 256Mi
+      node:
+        k8sNodeFilterName: system
+        size: 2
+    slurmNodes:
+      accounting:
+        customInitContainers:
+        - command:
+          - grep
+          - ' /volume-mount virtiofs '
+          - /proc/mounts
+          image: cr.eu-north1.nebius.cloud/soperator/busybox
+          name: ensure-jail-virtiofs
+          volumeMounts:
+          - mountPath: /volume-mount
+            name: jail
+        enabled: true
+        k8sNodeFilterName: accounting
+        mariadbOperator:
+          enabled: true
+          metrics:
+            enabled: true
+          protectedSecret: true
+          resources:
+            cpu: 2000m
+            ephemeralStorage: 16Gi
+            memory: 12Gi
+          storage:
+            ephemeral: false
+            volumeClaimTemplate:
+              accessModes:
+              - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 512Gi
+        munge:
+          resources:
+            cpu: 100m
+            ephemeralStorage: 5Gi
+            memory: 0.5Gi
+        slurmdbd:
+          resources:
+            cpu: 4900m
+            ephemeralStorage: 39Gi
+            memory: 13.5Gi
+      controller:
+        customInitContainers:
+        - command:
+          - grep
+          - ' /volume-mount virtiofs '
+          - /proc/mounts
+          image: cr.eu-north1.nebius.cloud/soperator/busybox
+          name: ensure-jail-virtiofs
+          volumeMounts:
+          - mountPath: /volume-mount
+            name: jail
+        k8sNodeFilterName: controller
+        munge:
+          resources:
+            cpu: 100m
+            ephemeralStorage: 5Gi
+            memory: 0.5Gi
+        size: 1
+        slurmctld:
+          resources:
+            cpu: 2000m
+            ephemeralStorage: 55Gi
+            memory: 11Gi
+        volumes:
+          spool:
+            volumeClaimTemplateSpec:
+              accessModes:
+              - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 50Gi
+              storageClassName: compute-csi-network-ssd-ext4
+      exporter:
+        enabled: true
+        exporterContainer:
+          resources:
+            cpu: 250m
+            ephemeralStorage: 0.5Gi
+            memory: 0.25Gi
+        k8sNodeFilterName: system
+      login:
+        customInitContainers:
+        - command:
+          - grep
+          - ' /volume-mount virtiofs '
+          - /proc/mounts
+          image: cr.eu-north1.nebius.cloud/soperator/busybox
+          name: ensure-jail-virtiofs
+          volumeMounts:
+          - mountPath: /volume-mount
+            name: jail
+        - command:
+          - grep
+          - ' /volume-mount virtiofs '
+          - /proc/mounts
+          image: cr.eu-north1.nebius.cloud/soperator/busybox
+          name: ensure-jail-submount-data-virtiofs
+          volumeMounts:
+          - mountPath: /volume-mount
+            name: data
+        k8sNodeFilterName: login
+        munge:
+          resources:
+            cpu: 100m
+            ephemeralStorage: 5Gi
+            memory: 0.5Gi
+        size: 1
+        sshRootPublicKeys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQKgvUeRkQjhEokaRcMNsOLNtvLHQW5Gudotx4VZvP5Z7LDa8jRnFX0VNyJ2ZYlhyCjTOfn92ivLA3uhMsQVnRTICSuHfm434lSUZySpPc+zF9pLgcj2n8XdQyLC/e1Cty9zFw3A1QjpoSYoK69x599r/rhQcNKYPt3FIGvTE945bHWxaic+tYntN5xv5LHms7THP1h2bMegEfjiwoArx7KpSX4/alyUjnhIf0HHHiDkgc3Ci+wIDyjTgQqR9JyXENe7H4vROTl9weOwKjsuI1oIdcP0e1nDNCYrnq8zYa9W/R1HGaspyAl7l5TG32HPV8uhicPOGJJM2tSYUgy155c0HxkXPWrlnr4l2d1Dn5XXXTQ4Bm8D/3SyKzUmtQFSqVBPvIwES8qnpOsg/24yWu1qDADE9nkhJpqXk2eO+GCrw2fQsYgjcjIkXH0gMk64qYB09WB9tSNtLuznf+R4opdPJIIAKqX22lS0PeZeLkH5I/H7SyKPhwFHc1w1w76WfH2d2U8nSY6wx0aIrDcIS5uPBEqnZuGIOZ6lsUeWxMW7h39qEoG0K3LS5SWa5ABJP7Si/AtqWIt5JFBgtwozSJXkdwDBN/LXYMZoJsLYZTbkZLfj0st3XS0Z0iX5KkWg2swz2uJXSBGHJHM1VgxnVFVE8w6S2Q2+KE4wd6CXd91Q==
+          sdriley@sdriley-mac
+        sshd:
+          resources:
+            cpu: 14000m
+            ephemeralStorage: 164Gi
+            memory: 54Gi
+        sshdConfigMapRefName: ""
+        sshdServiceAnnotations:
+          nebius.com/load-balancer-allocation-id: vpcallocation-e00xksvfz2d02g14dt
+        sshdServiceType: LoadBalancer
+        volumes:
+          customMounts:
+          - mountPath: /mnt/jail.upper/sys-host
+            name: sys-host
+            readOnly: true
+            volumeSourceName: sys-host
+          jailSubMounts:
+          - mountPath: /home
+            name: home-dir
+            volumeSourceName: home-dir
+          - mountPath: /etc/update-motd.d/95-nebius-o11y
+            name: motd-nebius-o11y
+            readOnly: true
+            subPath: 95-nebius-o11y
+            volumeSourceName: motd-nebius-o11y
+          - mountPath: /mnt/data
+            name: data
+            volumeSourceName: jail-submount-data
+      rest:
+        customInitContainers:
+        - command:
+          - grep
+          - ' /volume-mount virtiofs '
+          - /proc/mounts
+          image: cr.eu-north1.nebius.cloud/soperator/busybox
+          name: ensure-jail-virtiofs
+          volumeMounts:
+          - mountPath: /volume-mount
+            name: jail
+        enabled: true
+        k8sNodeFilterName: system
+        rest:
+          resources:
+            cpu: 2000m
+            ephemeralStorage: 0.5Gi
+            memory: 8Gi
+        size: 2
+    useDefaultAppArmorProfile: true
+    volumeSources:
+    - name: jail
+      persistentVolumeClaim:
+        claimName: jail-pvc
+        readOnly: false
+    - name: controller-spool
+      persistentVolumeClaim:
+        claimName: controller-spool-pvc
+        readOnly: false
+    - emptyDir:
+        sizeLimit: 382Gi
+      name: worker-spool
+    - createPVC: true
+      name: home-dir
+      persistentVolumeClaim:
+        claimName: home-dir
+      size: 42
+      storageClassName: nfs
+    - configMap:
+        defaultMode: 500
+        name: motd-nebius-o11y
+      name: motd-nebius-o11y
+    - name: jail-submount-data
+      persistentVolumeClaim:
+        claimName: jail-submount-data-pvc
+        readOnly: false
+    - hostPath:
+        path: /sys
+        type: Directory
+      name: sys-host
+    - hostPath:
+        path: /
+        type: ""
+      name: nvidia-driver-root
+    - configMap:
+        defaultMode: 500
+        name: image-storage
+      name: image-storage
+    - hostPath:
+        path: /var/run/nebius/slurm
+        type: DirectoryOrCreate
+      name: hpc-jobs-dir
+  valuesFrom:
+  - kind: ConfigMap
+    name: terraform-slurm-cluster
+    optional: true
+    valuesKey: values.yaml
+  - kind: ConfigMap
+    name: slurm-cluster
+    optional: true
+    valuesKey: values.yaml
+status:
+  conditions:
+  - lastTransitionTime: "2026-02-26T04:11:32Z"
+    message: Helm install succeeded for release soperator/soperator.v1 with chart
+      helm-slurm-cluster@3.0.0
+    observedGeneration: 1
+    reason: InstallSucceeded
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2026-02-26T03:41:59Z"
+    message: Helm install succeeded for release soperator/soperator.v1 with chart
+      helm-slurm-cluster@3.0.0
+    observedGeneration: 1
+    reason: InstallSucceeded
+    status: "True"
+    type: Released
+  helmChart: flux-system/flux-system-flux-system-soperator-fluxcd-slurm-cluster
+  history:
+  - appVersion: 3.0.0
+    chartName: helm-slurm-cluster
+    chartVersion: 3.0.0
+    configDigest: sha256:1cea39d29232ac766c05a7ae4d7a6ea01a30a92ff1dc4aa19fed2ce98fafea8d
+    digest: sha256:76b292e3e52ca6554c0d2640264e23b08026fc8dbfc07ded65b0380b762ad838
+    firstDeployed: "2026-02-26T03:41:58Z"
+    lastDeployed: "2026-02-26T03:41:58Z"
+    name: soperator
+    namespace: soperator
+    status: deployed
+    version: 1
+  lastAttemptedConfigDigest: sha256:1cea39d29232ac766c05a7ae4d7a6ea01a30a92ff1dc4aa19fed2ce98fafea8d
+  lastAttemptedGeneration: 1
+  lastAttemptedReleaseAction: install
+  lastAttemptedReleaseActionDuration: 782.525947ms
+  lastAttemptedRevision: 3.0.0
+  observedGeneration: 1
+  storageNamespace: flux-system
