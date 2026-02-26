@@ -163,7 +163,7 @@ spec:
       worker:
         k8sNodeFilterName: worker
         volumes:
-          local-data:
+          localData:
             volumeClaimTemplateSpec:
               accessModes:
               - ReadWriteOnce
@@ -171,7 +171,7 @@ spec:
                 requests:
                   storage: 200Gi
               storageClassName: compute-csi-network-ssd-ext4
-          image-storage:
+          imageStorage:
             volumeClaimTemplateSpec:
               accessModes:
               - ReadWriteOnce
