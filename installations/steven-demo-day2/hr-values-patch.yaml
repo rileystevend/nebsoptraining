@@ -1,0 +1,32 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-system-soperator-fluxcd-slurm-cluster
+  namespace: flux-system
+spec:
+  values:
+    slurmNodes:
+      accounting:
+        mariadbOperator:
+          storage:
+            volumeClaimTemplate:
+              resources:
+                requests:
+                  storage: 200Gi
+      worker:
+        k8sNodeFilterName: worker
+        volumes:
+          image-storage:
+            volumeClaimTemplateSpec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 200Gi
+              storageClassName: compute-csi-network-ssd-io-m3-ext4
+          local-data:
+            volumeClaimTemplateSpec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 200Gi
+              storageClassName: compute-csi-network-ssd-ext4
